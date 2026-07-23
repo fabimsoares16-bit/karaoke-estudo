@@ -374,10 +374,86 @@ body.editing .edit-only{display:inline-block;}
   .modal-box{padding:24px 20px;}
 }
 
-@media print {
-  @page {
-    size: portrait;
-  }
+/* ===== PRINT VIEW ===== */
+.print-overlay{
+  position:fixed;inset:0;z-index:150;
+  background:var(--bg);overflow-y:auto;
+  animation:fadeIn .3s ease;
+}
+.print-toolbar{
+  position:sticky;top:0;z-index:10;
+  background:rgba(255,255,255,.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+  padding:14px 24px;display:flex;align-items:center;justify-content:space-between;
+  max-width:720px;margin:0 auto;
+}
+.print-back-btn{
+  background:var(--surface);border:1px solid var(--line);
+  color:var(--muted);padding:8px 16px;border-radius:var(--radius-sm);
+  font-size:.85rem;font-weight:600;transition:all .2s;
+}
+.print-back-btn:hover{border-color:var(--rose);color:var(--rose);}
+.print-do-btn{
+  background:var(--grad);border:none;
+  color:#fff;padding:8px 20px;border-radius:var(--radius-sm);
+  font-size:.85rem;font-weight:700;transition:opacity .2s;
+}
+.print-do-btn:hover{opacity:.9;}
+.print-body{max-width:680px;margin:0 auto;padding:32px 24px 60px;}
+.print-song-header{text-align:center;margin-bottom:36px;padding-bottom:20px;border-bottom:2px solid var(--line);}
+.print-song-header h1{
+  font-size:1.8rem;font-weight:800;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:1.2;margin-bottom:6px;
+}
+.print-song-header .artist{color:var(--muted);font-size:.95rem;}
+.print-tag{
+  font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--rose);font-weight:600;margin:28px 0 12px;
+  padding-top:14px;border-top:1px solid var(--line);
+}
+.print-body>.print-tag:first-child{border-top:none;padding-top:0;}
+.print-line{
+  margin-bottom:8px;padding:10px 14px;
+  border-radius:var(--radius-xs);
+  background:linear-gradient(180deg,rgba(243,165,184,.05),rgba(126,200,227,.02));
+  border:1px solid rgba(0,0,0,.04);
+}
+.print-en{font-size:1.08rem;font-weight:600;line-height:1.5;}
+.print-pt{font-size:.88rem;margin-top:3px;line-height:1.5;}
+.print-ph{font-size:.82rem;font-style:italic;margin-top:2px;line-height:1.5;}
+.print-ph::before{content:"\266A ";opacity:.5;color:var(--gold);}
+.print-ref{
+  margin:14px 0;padding:14px 20px;
+  background:rgba(200,160,240,.06);
+  border:1.5px dashed var(--purple);border-radius:var(--radius);
+  color:var(--purple);font-size:.9rem;font-weight:600;
+  font-style:italic;text-align:center;
+}
+.print-u{display:inline;}
+.print-repeat-badge{
+  display:inline-block;font-size:.62rem;
+  background:rgba(243,165,184,.12);color:var(--rose);
+  padding:2px 8px;border-radius:6px;font-weight:700;
+  margin-left:8px;letter-spacing:0;text-transform:none;
+  vertical-align:middle;
+}
+
+@media(max-width:520px){
+  .print-toolbar{padding:10px 16px;}
+  .print-body{padding:24px 16px 48px;}
+  .print-song-header h1{font-size:1.4rem;}
+}
+
+@media print{
+  @page{size:portrait;margin:1.5cm;}
+  body.print-mode>*:not(.print-overlay){display:none!important;}
+  body.print-mode .print-overlay{position:static;overflow:visible;}
+  .print-toolbar{display:none!important;}
+  .print-line{break-inside:avoid;}
+  .print-tag{break-after:avoid;}
+  .print-ref{break-inside:avoid;}
+  .print-song-header{break-after:avoid;}
 }
 </style>
 </head>
@@ -421,6 +497,7 @@ body.editing .edit-only{display:inline-block;}
     <div class="player-toggles">
       <button class="ptoggle on" id="togglePt" onclick="toggleLayer('pt')" title="Tradução">PT</button>
       <button class="ptoggle on" id="togglePh" onclick="toggleLayer('ph')" title="Pronúncia">♫</button>
+      <button class="ptoggle" onclick="openPrintView()" title="Imprimir letra para estudo">🖨️</button>
       <button class="ptoggle" id="toggleEdit" onclick="toggleEditMode()" title="Ajustar tempos">✏️</button>
     </div>
   </div>
@@ -501,6 +578,9 @@ body.editing .edit-only{display:inline-block;}
 
 <!-- ===== TOAST ===== -->
 <div id="toast" class="toast hidden"></div>
+
+<!-- ===== PRINT OVERLAY ===== -->
+<div id="printOverlay" class="print-overlay hidden"></div>
 
 <script>
 /* =============================================================
@@ -1863,6 +1943,126 @@ function esc(s) {
   if (!s) return '';
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+/* =============================================================
+   PRINT VIEW — Letra para impressão / estudo
+   ============================================================= */
+function openPrintView() {
+  const song = state.currentSong;
+  if (!song) return;
+
+  // Pausa a música
+  if (audioMode === 'yt' && ytPlayer && ytReady) {
+    try { ytPlayer.pauseVideo(); } catch {}
+  } else if (audioMode === 'local') {
+    const a = document.getElementById('localAudioEl'); if (a) a.pause();
+  }
+
+  // Agrupa as linhas por seções (entre tags)
+  const sections = [];
+  let cur = null;
+  for (const item of song.lyrics) {
+    if (item.tag) {
+      if (cur && cur.lines.length) sections.push(cur);
+      cur = { tag: item.tag, lines: [] };
+    } else {
+      if (!cur) cur = { tag: '', lines: [] };
+      cur.lines.push(item);
+    }
+  }
+  if (cur && cur.lines.length) sections.push(cur);
+
+  // Fingerprint de cada seção pelo texto em inglês
+  const fps = sections.map(s =>
+    s.lines.map(l => l.words.map(w => w[0]).join(' ').toLowerCase().trim()).join('|')
+  );
+
+  // Conta quantas vezes cada fingerprint aparece
+  const fpCount = {};
+  fps.forEach(fp => { fpCount[fp] = (fpCount[fp] || 0) + 1; });
+
+  // Monta dados: primeira ocorrência completa, repetições como referência
+  const fpSeen = {};
+  let refIdx = 0;
+  const refNames = ['Refrão', 'Refrão B', 'Refrão C', 'Refrão D'];
+  const printData = [];
+
+  for (let i = 0; i < sections.length; i++) {
+    const fp = fps[i];
+    if (fpCount[fp] > 1) {
+      if (!fpSeen[fp]) {
+        const label = refNames[refIdx] || ('Refrão ' + (refIdx + 1));
+        refIdx++;
+        fpSeen[fp] = label;
+        printData.push({ type: 'full', tag: label, lines: sections[i].lines, repeatCount: fpCount[fp] });
+      } else {
+        printData.push({ type: 'ref', label: fpSeen[fp] });
+      }
+    } else {
+      printData.push({ type: 'full', tag: sections[i].tag, lines: sections[i].lines });
+    }
+  }
+
+  // Helpers de colorização (mesmas cores do karaokê)
+  const cw = (words) => words.map(([tx, u]) =>
+    `<span class="print-u" style="color:${COLORS[u] || 'inherit'}">${esc(tx)}</span>`
+  ).join(' ');
+  const cg = (groups) => groups.map(([tx, u]) =>
+    `<span class="print-u" style="color:${COLORS[u] || 'inherit'}">${esc(tx)}</span>`
+  ).join(' ');
+
+  let html = `
+    <div class="print-toolbar">
+      <button class="print-back-btn" onclick="closePrintView()">← Voltar</button>
+      <span style="font-size:.82rem;color:var(--muted);font-weight:600;">📄 Letra para Estudo</span>
+      <button class="print-do-btn" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+    <div class="print-body">
+      <div class="print-song-header">
+        <h1>${esc(song.title)}</h1>
+        <div class="artist">${esc(song.artist)}${song.album ? ' · ' + esc(song.album) : ''}</div>
+      </div>
+  `;
+
+  for (const pd of printData) {
+    if (pd.type === 'ref') {
+      html += `<div class="print-ref">🔁 ${esc(pd.label)} — repete</div>`;
+    } else {
+      const badge = pd.repeatCount
+        ? `<span class="print-repeat-badge">${pd.repeatCount}×</span>`
+        : '';
+      html += `<div class="print-tag">${esc(pd.tag)}${badge}</div>`;
+      for (const line of pd.lines) {
+        html += `<div class="print-line">`;
+        html += `<div class="print-en">${cw(line.words)}</div>`;
+        if (line.pt && line.pt.length) html += `<div class="print-pt">${cg(line.pt)}</div>`;
+        if (line.ph && line.ph.length) html += `<div class="print-ph">${cg(line.ph)}</div>`;
+        html += `</div>`;
+      }
+    }
+  }
+
+  html += `</div>`;
+
+  const overlay = document.getElementById('printOverlay');
+  overlay.innerHTML = html;
+  overlay.classList.remove('hidden');
+  document.body.classList.add('print-mode');
+}
+
+function closePrintView() {
+  const overlay = document.getElementById('printOverlay');
+  overlay.classList.add('hidden');
+  overlay.innerHTML = '';
+  document.body.classList.remove('print-mode');
+}
+
+// Fechar print view com Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !document.getElementById('printOverlay').classList.contains('hidden')) {
+    closePrintView();
+  }
+});
 
 /* =============================================================
    INIT
