@@ -1,3 +1,9 @@
 {
-  "cleanUrls": true
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/search_itunes", "destination": "/api/search_itunes" },
+    { "source": "/api/search_lrc", "destination": "/api/search_lrc" },
+    { "source": "/api/search_yt", "destination": "/api/search_yt" },
+    { "source": "/api/lyrics_fallback", "destination": "/api/lyrics_fallback" }
+  ]
 }
