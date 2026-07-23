@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karaokê de Estudo — Aprenda Inglês com Música</title>
+<meta name="description" content="Aprenda inglês cantando! Karaokê com tradução, pronúncia e sincronização para qualquer música.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8fafc;--bg2:#f1f5f9;--surface:#ffffff;--surface2:#f8fafc;
+  --gold:#d97706;--rose:#e11d48;--blue:#0284c7;--green:#16a34a;--purple:#9333ea;--orange:#ea580c;
+  --ink:#0f172a;--ink2:#334155;--muted:#64748b;--dim:#94a3b8;--line:#e2e8f0;
+  --radius:14px;--radius-sm:10px;--radius-xs:8px;
+  --shadow:0 8px 32px rgba(0,0,0,.08);
+  --grad:linear-gradient(135deg,var(--rose),var(--blue));
+  --grad2:linear-gradient(135deg,var(--blue),var(--purple));
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  min-height:100vh;
+}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px;}
+.hidden{display:none!important;}
+button{font-family:inherit;cursor:pointer;}
+input,textarea{font-family:inherit;}
+
+/* ===== SCREEN TRANSITIONS ===== */
+.screen{min-height:100vh;animation:fadeIn .4s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+
+/* ===== HOME SCREEN ===== */
+#homeScreen{
+  background:
+    radial-gradient(ellipse 900px 500px at 80% -5%,rgba(243,165,184,.10),transparent),
+    radial-gradient(ellipse 700px 500px at 0% 10%,rgba(126,200,227,.08),transparent),
+    radial-gradient(ellipse 500px 400px at 50% 100%,rgba(200,160,240,.06),transparent),
+    var(--bg);
+  padding-bottom:40px;
+}
+.home-header{text-align:center;padding:60px 24px 32px;}
+.home-header .logo{font-size:.68rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:14px;}
+.home-header h1{
+  font-size:clamp(2.2rem,7vw,3.6rem);font-weight:800;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:1.15;margin-bottom:8px;
+}
+.home-header .subtitle{color:var(--muted);font-size:.95rem;}
+
+.search-section{max-width:600px;margin:0 auto;padding:0 24px;}
+.search-box{
+  display:flex;gap:0;
+  background:var(--surface);border:1.5px solid var(--line);
+  border-radius:var(--radius);overflow:hidden;
+  transition:border-color .3s,box-shadow .3s;
+}
+.search-box:focus-within{
+  border-color:var(--rose);
+  box-shadow:0 0 0 3px rgba(243,165,184,.15),var(--shadow);
+}
+.search-box input{
+  flex:1;background:transparent;border:none;outline:none;
+  padding:16px 20px;color:var(--ink);font-size:1rem;
+}
+.search-box input::placeholder{color:var(--dim);}
+.search-box button{
+  background:var(--grad);border:none;padding:16px 24px;
+  color:#ffffff;font-weight:700;font-size:.9rem;
+  transition:opacity .2s;
+}
+.search-box button:hover{opacity:.9;}
+.search-box button:active{opacity:.8;}
+
+.section-title{
+  max-width:600px;margin:36px auto 16px;padding:0 24px;
+  font-size:.72rem;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;
+}
+
+#searchResults,#libraryGrid{max-width:600px;margin:0 auto;padding:0 24px;}
+
+.result-card,.lib-card{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;
+  cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
+  animation:slideUp .35s ease backwards;
+}
+.result-card::before,.lib-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(243,165,184,.04),rgba(126,200,227,.03));
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.result-card:hover::before,.lib-card:hover::before{opacity:1;}
+.result-card:hover,.lib-card:hover{
+  border-color:rgba(243,165,184,.3);
+  transform:translateY(-2px);
+  box-shadow:0 6px 24px rgba(0,0,0,.3);
+}
+.result-card:nth-child(1){animation-delay:.05s;}
+.result-card:nth-child(2){animation-delay:.1s;}
+.result-card:nth-child(3){animation-delay:.15s;}
+.result-card:nth-child(4){animation-delay:.2s;}
+.result-card:nth-child(5){animation-delay:.25s;}
+
+.card-title{font-size:1.05rem;font-weight:600;color:var(--ink);margin-bottom:3px;}
+.card-artist{font-size:.88rem;color:var(--muted);}
+.card-meta{font-size:.78rem;color:var(--dim);margin-top:6px;display:flex;gap:12px;align-items:center;}
+.card-meta .badge{
+  background:rgba(126,200,227,.12);color:var(--blue);
+  padding:2px 8px;border-radius:6px;font-weight:600;font-size:.7rem;
+}
+.card-meta .badge.nosync{background:rgba(240,147,107,.12);color:var(--orange);}
+.card-delete{
+  position:absolute;top:12px;right:12px;
+  background:rgba(255,100,100,.1);border:1px solid rgba(255,100,100,.2);
+  color:#ff6b6b;width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;opacity:0;transition:opacity .2s;z-index:2;
+}
+.lib-card:hover .card-delete{opacity:1;}
+.card-delete:hover{background:rgba(255,100,100,.25);}
+
+.empty-state{
+  text-align:center;padding:48px 24px;color:var(--dim);
+}
+.empty-state .icon{font-size:2.4rem;margin-bottom:12px;}
+.empty-state p{font-size:.92rem;line-height:1.6;}
+
+.loading-dots{display:flex;justify-content:center;gap:6px;padding:24px;}
+.loading-dots span{
+  width:8px;height:8px;border-radius:50%;background:var(--rose);
+  animation:pulse 1.2s ease-in-out infinite;
+}
+.loading-dots span:nth-child(2){animation-delay:.2s;}
+.loading-dots span:nth-child(3){animation-delay:.4s;}
+
+/* ===== PLAYER SCREEN ===== */
+#playerScreen{
+  background:
+    radial-gradient(ellipse 900px 500px at 80% -5%,rgba(243,165,184,.10),transparent),
+    radial-gradient(ellipse 700px 500px at 0% 10%,rgba(126,200,227,.08),transparent),
+    var(--bg);
+  padding-bottom:190px;
+}
+.player-header{
+  padding:20px 24px 12px;max-width:720px;margin:0 auto;
+  display:flex;align-items:flex-start;gap:14px;
+}
+.back-btn{
+  background:var(--surface);border:1px solid var(--line);
+  color:var(--muted);width:40px;height:40px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;flex-shrink:0;transition:all .2s;margin-top:2px;
+}
+.back-btn:hover{border-color:var(--rose);color:var(--rose);}
+.player-info{flex:1;min-width:0;}
+.player-info .eyebrow{font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:4px;}
+.player-info h1{
+  font-size:clamp(1.4rem,4vw,2rem);font-weight:700;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.player-info .artist{color:var(--muted);font-size:.85rem;margin-top:2px;}
+.player-toggles{display:flex;gap:6px;flex-shrink:0;margin-top:4px;}
+.ptoggle{
+  background:var(--surface);border:1px solid var(--line);
+  color:var(--dim);padding:6px 10px;border-radius:var(--radius-xs);
+  font-size:.72rem;font-weight:600;transition:all .2s;
+}
+.ptoggle.on{border-color:var(--gold);color:var(--gold);}
+
+/* Lyrics */
+#lyrics{max-width:720px;margin:0 auto;padding:8px 24px 0;}
+.tag{font-size:.64rem;letter-spacing:.25em;text-transform:uppercase;color:var(--rose);font-weight:600;margin:24px 0 10px;}
+.line{
+  padding:14px 16px;margin-bottom:6px;border-radius:var(--radius);
+  cursor:pointer;border:1px solid transparent;
+  transition:all .25s;opacity:.35;
+}
+.line:hover{background:rgba(0,0,0,.04);}
+.line.active{
+  opacity:1;
+  background:linear-gradient(180deg,rgba(243,165,184,.08),rgba(126,200,227,.04));
+  border-color:rgba(243,165,184,.25);
+}
+.line.sung{opacity:.65;}
+.en{font-size:1.15rem;font-weight:600;}
+.pt{font-size:.9rem;color:var(--muted);margin-top:3px;}
+.pt.off{display:none;}
+.ph{font-size:.82rem;color:var(--gold);font-style:italic;margin-top:2px;opacity:.85;}
+.ph::before{content:"\266A ";opacity:.5;}
+.ph.off{display:none;}
+.w{position:relative;display:inline-block;color:var(--dim);}
+.w .fill-w{position:absolute;left:0;top:0;white-space:nowrap;overflow:hidden;width:0;color:var(--uc,#fff);pointer-events:none;}
+.pt .u,.ph .u{color:var(--uc);}
+.time-badge{
+  display:inline-block;font-size:.68rem;color:var(--blue);
+  font-family:ui-monospace,monospace;
+  background:rgba(126,200,227,.1);padding:1px 7px;border-radius:6px;margin-bottom:4px;
+}
+.line-edit-btn{
+  float:right;font-size:.68rem;background:rgba(232,192,125,.15);
+  color:var(--gold);border:none;padding:3px 8px;border-radius:6px;
+  font-weight:600;opacity:0;transition:opacity .2s;
+}
+.line:hover .line-edit-btn{opacity:1;}
+.mark-btn{
+  margin-left:6px;font-size:.68rem;background:var(--gold);color:#ffffff;
+  border:none;padding:3px 9px;border-radius:6px;cursor:pointer;font-weight:700;
+}
+.edit-only{display:none;}
+body.editing .edit-only{display:inline-block;}
+
+/* Player Bar */
+.player-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:rgba(255,255,255,.95);backdrop-filter:blur(20px);
+  border-top:1px solid var(--line);padding:10px 16px 14px;
+}
+.player-inner{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:8px;}
+.player-row{display:flex;align-items:center;gap:12px;}
+.yt-container{
+  width:140px;height:79px;border-radius:var(--radius-xs);overflow:hidden;
+  flex-shrink:0;background:var(--surface);border:1px solid var(--line);
+}
+.local-audio-icon{
+  width:140px;height:79px;border-radius:var(--radius-xs);
+  flex-shrink:0;background:var(--surface);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;color:var(--muted);
+}
+.yt-container iframe{width:100%;height:100%;}
+.play-btn{
+  width:44px;height:44px;border-radius:50%;border:none;flex-shrink:0;
+  background:var(--grad);color:#ffffff;font-size:1.1rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,opacity .2s;
+}
+.play-btn:hover{transform:scale(1.06);}
+.play-btn:active{transform:scale(.96);}
+.play-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.timecode{
+  font-family:ui-monospace,monospace;font-size:.78rem;
+  color:var(--muted);flex-shrink:0;min-width:85px;
+}
+.progress-bar{
+  flex:1;height:6px;background:var(--line);
+  border-radius:3px;cursor:pointer;position:relative;overflow:hidden;
+}
+.progress-fill{height:100%;background:var(--grad);border-radius:3px;width:0;transition:width .1s linear;}
+.speed-btn{
+  background:var(--surface);border:1px solid var(--line);color:var(--muted);
+  border-radius:var(--radius-xs);padding:5px 8px;font-size:.76rem;
+  font-weight:600;flex-shrink:0;transition:all .2s;
+}
+.speed-btn:hover{border-color:var(--blue);color:var(--blue);}
+.player-status{font-size:.72rem;color:var(--dim);text-align:center;min-height:1em;}
+.player-status b{color:var(--gold);}
+
+/* ===== MODALS ===== */
+.modal-overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(15,23,42,.4);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;animation:fadeIn .25s ease;
+}
+.modal-box{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:18px;padding:32px;max-width:480px;width:100%;
+  box-shadow:var(--shadow);animation:slideUp .3s ease;
+}
+.modal-box h2{
+  font-size:1.3rem;font-weight:700;margin-bottom:6px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.modal-box p{color:var(--muted);font-size:.88rem;margin-bottom:20px;}
+.modal-box label{font-size:.78rem;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;}
+.modal-input{
+  width:100%;background:var(--bg2);border:1.5px solid var(--line);
+  border-radius:var(--radius-sm);padding:13px 16px;color:var(--ink);
+  font-size:.95rem;outline:none;transition:border-color .2s;
+}
+.modal-input:focus{border-color:var(--rose);}
+.modal-textarea{
+  width:100%;background:var(--bg2);border:1.5px solid var(--line);
+  border-radius:var(--radius-sm);padding:12px 16px;color:var(--ink);
+  font-size:.9rem;outline:none;resize:vertical;min-height:70px;
+  transition:border-color .2s;line-height:1.5;
+}
+.modal-textarea:focus{border-color:var(--rose);}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.modal-actions .btn-primary{
+  flex:1;background:var(--grad);border:none;padding:13px;
+  border-radius:var(--radius-sm);color:#ffffff;font-weight:700;
+  font-size:.92rem;transition:opacity .2s;
+}
+.modal-actions .btn-primary:hover{opacity:.9;}
+.modal-actions .btn-secondary{
+  flex:1;background:transparent;border:1.5px solid var(--line);
+  padding:13px;border-radius:var(--radius-sm);color:var(--muted);
+  font-weight:600;font-size:.92rem;transition:all .2s;
+}
+.modal-actions .btn-secondary:hover{border-color:var(--muted);color:var(--ink);}
+
+/* Processing Steps */
+.process-steps{margin:20px 0;}
+.pstep{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 0;font-size:.9rem;color:var(--dim);
+  transition:color .3s;
+}
+.pstep.done{color:var(--green);}
+.pstep.active{color:var(--ink);}
+.pstep .picon{width:22px;text-align:center;font-size:.9rem;}
+.pstep.active .picon{animation:spin 1s linear infinite;}
+.process-bar{
+  height:4px;background:var(--line);border-radius:2px;margin-top:12px;overflow:hidden;
+}
+.process-bar-fill{
+  height:100%;background:var(--grad);border-radius:2px;width:0;
+  transition:width .5s ease;
+}
+
+/* Edit line section */
+.edit-section{margin-bottom:16px;}
+.edit-section .en-preview{
+  font-size:.95rem;font-weight:600;color:var(--ink2);
+  padding:10px 14px;background:var(--bg);border-radius:var(--radius-xs);
+  margin-bottom:12px;border:1px solid var(--line);
+}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:200px;left:50%;transform:translateX(-50%);
+  background:var(--surface2);border:1px solid var(--line);
+  padding:10px 20px;border-radius:var(--radius);
+  font-size:.85rem;color:var(--ink);box-shadow:var(--shadow);
+  z-index:200;animation:slideUp .3s ease;pointer-events:none;
+}
+
+/* Manual add section */
+.manual-btn{
+  display:block;max-width:600px;margin:16px auto;padding:0 24px;
+}
+.manual-btn button{
+  width:100%;background:transparent;border:1.5px dashed var(--line);
+  padding:14px;border-radius:var(--radius);color:var(--dim);
+  font-size:.88rem;transition:all .2s;
+}
+.manual-btn button:hover{border-color:var(--muted);color:var(--muted);}
+
+/* Responsive */
+@media(max-width:520px){
+  .home-header{padding:40px 20px 24px;}
+  .home-header h1{font-size:2rem;}
+  .search-section,.section-title,#searchResults,#libraryGrid{padding:0 16px;}
+  .player-header{padding:14px 16px 8px;}
+  #lyrics{padding:4px 16px 0;}
+  .en{font-size:1.02rem;}
+  .yt-container, .local-audio-icon{width:100px;height:56px;}
+  .timecode{min-width:72px;font-size:.72rem;}
+  .player-bar{padding:8px 12px 12px;}
+  .player-toggles{gap:4px;}
+  .ptoggle{padding:4px 7px;font-size:.66rem;}
+  .modal-box{padding:24px 20px;}
+}
+
+@media print {
+  @page {
+    size: portrait;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HOME SCREEN ===== -->
+<div id="homeScreen" class="screen">
+  <header class="home-header">
+    <div class="logo">🎵 Karaokê de Estudo</div>
+    <h1>Aprenda Inglês<br>com Música</h1>
+    <p class="subtitle">Busque qualquer música, ouça com tradução e pronúncia</p>
+  </header>
+
+  <div class="search-section">
+    <form class="search-box" onsubmit="event.preventDefault(); triggerSearchNow();">
+      <input type="text" id="searchInput" placeholder="Ex: Bruno Mars, Ariana Grande, Shape of You..." autocomplete="off" oninput="onSearchInput()">
+      <button type="submit" id="searchBtn">Buscar</button>
+    </form>
+  </div>
+
+  <div id="searchArea" class="hidden">
+    <div class="section-title">Resultados</div>
+    <div id="searchResults"></div>
+  </div>
+
+  <div id="libraryArea">
+    <div class="section-title">Sua Biblioteca</div>
+    <div id="libraryGrid"></div>
+  </div>
+</div>
+
+<!-- ===== PLAYER SCREEN ===== -->
+<div id="playerScreen" class="screen hidden">
+  <div class="player-header">
+    <button class="back-btn" onclick="goHome()" title="Voltar">←</button>
+    <div class="player-info">
+      <div class="eyebrow">Karaokê de Estudo</div>
+      <h1 id="songTitle">—</h1>
+      <div class="artist" id="songArtist">—</div>
+    </div>
+    <div class="player-toggles">
+      <button class="ptoggle on" id="togglePt" onclick="toggleLayer('pt')" title="Tradução">PT</button>
+      <button class="ptoggle on" id="togglePh" onclick="toggleLayer('ph')" title="Pronúncia">♫</button>
+      <button class="ptoggle" id="toggleEdit" onclick="toggleEditMode()" title="Ajustar tempos">✏️</button>
+    </div>
+  </div>
+  <main id="lyrics"></main>
+  <div class="player-bar">
+    <div class="player-inner">
+      <div class="player-row">
+        <audio id="localAudioEl" class="hidden" preload="auto"></audio>
+        <div class="yt-container" id="ytContainer"><div id="ytPlayer"></div></div>
+        <div class="local-audio-icon hidden" id="localAudioIcon">🎵</div>
+        <button class="play-btn" id="playBtn" disabled onclick="togglePlay()">▶</button>
+        <div class="timecode"><span id="curTime">0:00</span> / <span id="durTime">0:00</span></div>
+        <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+        <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()">1×</button>
+      </div>
+      <div class="player-status" id="playerStatus">Cole a URL do YouTube para começar</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== YOUTUBE URL MODAL ===== -->
+<div id="ytModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h2>🎬 Link do YouTube</h2>
+    <p>Cole o link do vídeo do YouTube com o áudio da música</p>
+    <div id="ytInputs">
+      <label for="ytUrlInput">URL do YouTube</label>
+      <input type="text" id="ytUrlInput" class="modal-input" placeholder="https://youtube.com/watch?v=...">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('ytModal')">Cancelar</button>
+        <button class="btn-primary" onclick="confirmYouTube()">Carregar Música</button>
+      </div>
+    </div>
+    <div id="ytDivider" style="text-align:center; margin: 20px 0; color: var(--muted); font-size: .8rem; font-weight: 600;">OU</div>
+    <button class="btn-secondary" style="width:100%; padding:14px;" onclick="document.getElementById('localAudioInput').click()">📁 Carregar arquivo MP3 do PC</button>
+    <input type="file" id="localAudioInput" accept="audio/*" style="display:none" onchange="confirmLocalAudio(this)">
+  </div>
+</div>
+
+<!-- ===== PROCESSING MODAL ===== -->
+<div id="processModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h2>⏳ Preparando sua música...</h2>
+    <p id="processingSongInfo">—</p>
+    <div class="process-steps">
+      <div class="pstep" id="pstep1"><span class="picon">○</span>Buscando letra sincronizada</div>
+      <div class="pstep" id="pstep2"><span class="picon">○</span>Traduzindo para português</div>
+      <div class="pstep" id="pstep3"><span class="picon">○</span>Gerando pronúncia aproximada</div>
+      <div class="pstep" id="pstep4"><span class="picon">○</span>Salvando na biblioteca</div>
+    </div>
+    <div class="process-bar"><div class="process-bar-fill" id="processBarFill"></div></div>
+  </div>
+</div>
+
+<!-- ===== EDIT LINE MODAL ===== -->
+<div id="editLineModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h2>✏️ Editar Linha</h2>
+    <div class="edit-section">
+      <label>Inglês (original)</label>
+      <div class="en-preview" id="editEn">—</div>
+    </div>
+    <div class="edit-section">
+      <label for="editPtInput">Tradução (português)</label>
+      <textarea id="editPtInput" class="modal-textarea" rows="2"></textarea>
+    </div>
+    <div class="edit-section">
+      <label for="editPhInput">Pronúncia aproximada</label>
+      <textarea id="editPhInput" class="modal-textarea" rows="2"></textarea>
+    </div>
+    <input type="hidden" id="editLineIdx">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('editLineModal')">Cancelar</button>
+      <button class="btn-primary" onclick="saveLineEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div id="toast" class="toast hidden"></div>
+
+<script>
+/* =============================================================
+   CONSTANTS
+   ============================================================= */
+const COLORS = {1:'#e11d48',2:'#0284c7',3:'#d97706',4:'#16a34a',5:'#9333ea',6:'#ea580c'};
+const SPEEDS = [1, 1.25, 1.5, 2, 0.75, 0.5];
+
+/* =============================================================
+   PHONETIC DICTIONARY — ~200 common English words
+   ============================================================= */
+const PH = {
+  'i':'ái','you':'iú','he':'rí','she':'xí','we':'uí','they':'dêi',
+  'me':'mi','my':'mái','your':'iór','his':'ríz','her':'râr','our':'áur',
+  'the':'dâ','a':'â','an':'ân','is':'íz','are':'ár','was':'uóz','were':'uâr',
+  'am':'ém','be':'bí','been':'bín','being':'bíin',
+  'have':'rév','has':'réz','had':'réd',
+  'do':'du','does':'dâz','did':'díd','done':'dân',
+  'will':'uíl','would':'uúd','could':'kúd','should':'xúd',
+  'can':'kén',"can't":'kênt','may':'mêi','might':'máit','must':'mâst',
+  'shall':'xél',"let's":'léts','let':'lét',
+  'not':'nót','no':'nôu','yes':'iés',
+  'and':'énd','or':'ór','but':'bât','so':'sôu','if':'íf','then':'dén',
+  'that':'dét','this':'dís','these':'díiz','those':'dôuz',
+  'what':'uót','when':'uén','where':'uér','who':'rúu','how':'ráu','why':'uái',
+  'which':'uítch',
+  'with':'uíf','from':'frâm','for':'fór','in':'ín','on':'ón','at':'ét',
+  'to':'tu','of':'óv','by':'bái','up':'âp','out':'áut',
+  'about':'âbáut','into':'íntu','over':'ôuvâr','after':'áftâr',
+  'down':'dáun','away':'âuêi','back':'bék','again':'âguén',
+  'it':'ít',"it's":'íts','its':'íts',
+  'there':'dér',"there's":'dérz','here':'ríir',"here's":'ríirz',
+  'now':'náu','just':'djâst','only':'ôunli','still':'stíl','even':'ívân',
+  'very':'véri','too':'tuu','much':'mâtch','more':'mór','most':'môust',
+  'all':'ól','every':'évri','each':'íitch',
+  'one':'uân','two':'tuu','three':'frii',
+  'love':'lâv','like':'láik','know':'nôu','want':'uânt','need':'níid',
+  'go':'gôu','going':'gôuin','gone':'gón','come':'kâm','coming':'kâmin',
+  'make':'mêik','making':'mêikin','take':'têik','taking':'têikin',
+  'give':'guív','say':'sêi','said':'séd','tell':'tél','told':'tôuld',
+  'see':'síi','seen':'síin','get':'guét','getting':'guétin',
+  'think':'fínk','feel':'fíil','feeling':'fíílin',
+  'try':'trái','leave':'líiv','call':'kól','keep':'kíip',
+  'put':'pút','run':'rân','stop':'stóp','turn':'târn',
+  'start':'stárt','stand':'sténd','hold':'rôuld','bring':'bríng',
+  'heart':'rárt','life':'láif','live':'lív','lives':'láivz',
+  'time':'táim','day':'dêi','night':'náit','way':'uêi',
+  'world':'uôrld','baby':'bêibi','girl':'gârl','boy':'bói','man':'mén',
+  'never':'névâr','always':'ólwêiz','forever':'fârévâr',
+  'good':'gúd','bad':'béd','right':'ráit','wrong':'rông',
+  'big':'bíg','little':'lítâl','long':'lông',
+  'new':'niú','old':'ôuld','young':'iâng',
+  'better':'bétâr','best':'bést',
+  'first':'fârst','last':'lést',
+  'high':'rái','higher':'ráiâr','low':'lôu','lower':'lôuâr',
+  'true':'truu','real':'ríâl','own':'ôun',
+  'same':'sêim','other':'âdâr','another':'ânâdâr',
+  'together':'tâguédâr','alone':'âlôun',
+  'enough':'ínâf',
+  'nothing':'nâfin','something':'sâmfin','everything':'évrifin','anything':'énifin',
+  'nobody':'nôubâdi','everybody':'évribâdi','somebody':'sâmbâdi','anyone':'éniuân',
+  'people':'pípâl','around':'âráund','through':'frúu',
+  "don't":'dôunt',"won't":'uôunt',"ain't":'êint',
+  "i'm":'áim',"i'll":'áil',"i've":'áiv',"i'd":'áid',
+  "you're":'iór',"you'll":'iúl',"you've":'iúv',"you'd":'iúd',
+  "he's":'ríz',"she's":'xíz',"we're":'uír',"we'll":'uíl',"we've":'uív',
+  "they're":'dér',"they'll":'dêil',"they've":'dêiv',
+  "that's":'déts',"what's":'uóts',"who's":'rúuz',
+  "doesn't":'dâzânt',"didn't":'dídânt',"wasn't":'uózânt',"isn't":'ízânt',
+  "aren't":'árânt',"haven't":'révânt',
+  "couldn't":'kúdânt',"wouldn't":'uúdânt',"shouldn't":'xúdânt',
+  'gonna':'gâna','wanna':'uâna','gotta':'gâta',
+  "i'ma":'áima',"i'mma":'áima',"imma":'áima',
+  'cause':'kóz',"'cause":'kóz',
+  'yeah':'iéa','oh':'ôu','ooh':'uuu','hey':'rêi','ah':'áa',
+  'eye':'ái','eyes':'áiz','mind':'máind','find':'fáind',
+  'thing':'fín','things':'fíns',
+  'count':'káunt','counts':'káunts',
+  'sing':'síng','singing':'síngin','song':'sóng',
+  'play':'plêi','playing':'plêiin',
+  'break':'brêik','breaking':'brêikin',
+  'throw':'frôu','throwing':'frôuin',
+  'hang':'réng','hanging':'réngin',
+  'bring':'bríng','bringing':'bríngin',
+  'fall':'fól','falling':'fólin',
+  'cry':'krái','crying':'kráiin',
+  'die':'dái','dying':'dáiin',
+  'fly':'flái','fire':'fáiâr',
+  'dream':'driim','dreaming':'dríímin',
+  'walk':'uók','walking':'uókin',
+  'talk':'tók','talking':'tókin',
+  'dance':'déns','dancing':'dénsin',
+  'stickwitu':'stík-uíf-iú',
+  'appreciate':'âpríxiêit','endlessly':'éndlesli','exactly':'igzéktli',
+  'private':'práivât','between':'bituín',
+  'beautiful':'biútiful','wonderful':'uândârful',
+  'heaven':'révân','ever':'évâr',
+  'under':'ândâr','behind':'biráind','beside':'bisáid',
+  'before':'bifór','without':'uidáut','within':'uidín',
+  'maybe':'mêibi','really':'ríâli','only':'ôunli',
+  'already':'olrédi','probably':'próbâbli',
+  'tonight':'tunáit','today':'tudêi','tomorrow':'tumórou',
+  'morning':'mórnin','evening':'ívnin',
+  'woman':'uúmân','women':'uímin','children':'tchíldrân',
+  'friend':'frénd','friends':'fréndz',
+  'home':'rôum','house':'ráuz','place':'plêis',
+  'hand':'rénd','hands':'réndz',
+  'face':'fêis','body':'bódi','soul':'sôul',
+  'light':'láit','dark':'dárk','rain':'rêin',
+  'sky':'skái','sun':'sân','star':'stár','stars':'stárz',
+  'free':'fríi','freedom':'fríidâm',
+  'pain':'pêin','hurt':'rârt',
+  'happy':'répi','sad':'séd','strong':'stróng',
+  'sure':'xúr','enough':'ínâf','else':'éls',
+  'words':'uôrdz','word':'uôrd',
+  'name':'nêim','story':'stóri',
+  'power':'páuâr','money':'mâni',
+  'door':'dór','open':'ôupân','close':'klôuz',
+  'smile':'smáil','kiss':'kís',
+  'touch':'tâtch','miss':'mís',
+  'wait':'uêit','waiting':'uêitin',
+  'stay':'stêi','staying':'stêiin',
+  'watch':'uótch',
+  'remember':'rimêmbâr','forget':'fórguét',
+  'believe':'bilíiv','understand':'ândârsténd',
+  'promise':'prómis',
+  'change':'tchêindj','chance':'tchéns',
+  'help':'rélp','hope':'rôup',
+  'wish':'uíx','wonder':'uândâr',
+  'lost':'lóst','found':'fáund',
+  'save':'sêiv','safe':'sêif',
+  'fight':'fáit','wrong':'rông',
+  'seem':'síim','seems':'síimz',
+  'mine':'máin','yours':'iórz',
+  'own':'ôun',
+  'car':'kár','road':'rôud','street':'stríit',
+  'city':'síti','land':'lénd',
+  'sea':'síi','water':'uótâr',
+  'blood':'blâd',
+  'war':'uór','peace':'píis',
+  'god':'gód','angel':'êindjâl',
+  'sleep':'slíip','wake':'uêik',
+  'dead':'déd','death':'déf',
+  'born':'bórn','alive':'âláiv',
+  'bit':'bít','piece':'píis','part':'párt',
+  'end':'énd','begin':'biguín',
+  'side':'sáid','inside':'insáid','outside':'áutsáid',
+  'above':'âbâv','below':'bilôu',
+  'reason':'ríizân',
+  'while':'uáil','until':'ântíl','since':'síns',
+  'once':'uâns','twice':'tuáis',
+  'kind':'káind','type':'táip',
+  'line':'láin','sign':'sáin',
+  'picture':'píktchâr',
+  'color':'kâlâr','blue':'bluu','red':'réd','white':'uáit','black':'blék','green':'griin',
+  'head':'réd','eye':'ái',
+};
+
+/* =============================================================
+   PHONETIC RULES — fallback for words not in dictionary
+   ============================================================= */
+const PH_RULES = [
+  [/tion$/,'xân'],[/sion$/,'jân'],[/ious$/,'iâs'],[/eous$/,'iâs'],
+  [/ness$/,'nés'],[/ment$/,'mânt'],[/able$/,'êibâl'],[/ible$/,'íbâl'],
+  [/ful$/,'ful'],[/less$/,'lés'],[/ous$/,'âs'],[/ive$/,'ív'],
+  [/ight/,'áit'],[/ough/,'óf'],[/ould/,'ud'],
+  [/ing$/,'in'],[/ting$/,'tin'],[/ding$/,'din'],[/king$/,'kin'],
+  [/ed$/,'d'],[/ly$/,'li'],[/er$/,'âr'],[/est$/,'ést'],
+  [/ck/,'k'],[/sh/,'x'],[/ch/,'tch'],[/tch/,'tch'],
+  [/th/,'d'],[/ph/,'f'],[/wh/,'u'],[/wr/,'r'],[/kn/,'n'],
+  [/qu/,'ku'],[/gu(?=[ei])/,'gu'],
+  [/ee/,'ii'],[/ea/,'ii'],[/ie$/,'i'],
+  [/oo/,'uu'],[/ou/,'áu'],[/ow$/,'ôu'],[/ow(?=[nlr])/,'ôu'],[/ow/,'áu'],
+  [/ai/,'êi'],[/ay/,'êi'],[/ei/,'êi'],
+  [/oi/,'ói'],[/oy/,'ói'],
+  [/au/,'ó'],[/aw/,'ó'],
+  [/ew/,'iú'],[/ue$/,'uu'],
+  [/ore$/,'ór'],[/are$/,'ér'],[/ire$/,'áiâr'],[/ure$/,'iúr'],
+  [/ir/,'âr'],[/ur/,'âr'],[/ar/,'ár'],[/or/,'ór'],
+  [/ge$/,'dj'],[/ce$/,'s'],[/se$/,'z'],
+  [/^j/,'dj'],[/^y(?=[aeiou])/,'i'],
+  [/x/,'ks'],[/^w/,'u'],[/w/,'u'],
+  [/(?<=[aeiou])gh/,''],[/gh/,'g'],
+];
+
+function phonetize(word) {
+  const raw = word.toLowerCase().replace(/[.,!?;:"""''()[\]]/g, '');
+  if (!raw) return '';
+  if (PH[raw]) return PH[raw];
+  // try without trailing s/es
+  if (raw.endsWith('s') && PH[raw.slice(0,-1)]) return PH[raw.slice(0,-1)] + 'z';
+  if (raw.endsWith("'s") && PH[raw.slice(0,-2)]) return PH[raw.slice(0,-2)] + 'z';
+
+  let r = raw;
+  for (const [pat, rep] of PH_RULES) r = r.replace(pat, rep);
+  // Basic vowel approximation for remaining
+  r = r.replace(/a/g,'é').replace(/e/g,'é').replace(/i/g,'i').replace(/o/g,'ó').replace(/u/g,'â');
+  return r;
+}
+
+function phonetizeLine(text) {
+  return text.split(/\s+/).map(w => phonetize(w)).join(' ');
+}
+
+/* =============================================================
+   STATE
+   ============================================================= */
+let state = {
+  currentScreen: 'home',
+  currentSong: null,
+  pendingSong: null, // song from search waiting for YT url
+  library: [],
+  editing: false,
+  showPt: true,
+  showPh: true,
+};
+
+let lineEls = [];
+let lineMeta = [];
+let ytPlayer = null;
+let ytReady = false;
+let syncInterval = null;
+let speedIdx = 0;
+let audioMode = 'yt'; // 'yt' or 'local'
+let tempLocalAudioUrl = null;
+
+/* =============================================================
+   LOCAL STORAGE
+   ============================================================= */
+const STORAGE_KEY = 'karaoke_study_library';
+
+function loadLibrary() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    state.library = raw ? JSON.parse(raw) : [];
+  } catch { state.library = []; }
+}
+
+function saveLibrary() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.library));
+}
+
+function saveSong(song) {
+  const idx = state.library.findIndex(s => s.id === song.id);
+  if (idx >= 0) state.library[idx] = song;
+  else state.library.unshift(song);
+  saveLibrary();
+}
+
+function deleteSong(id) {
+  state.library = state.library.filter(s => s.id !== id);
+  saveLibrary();
+  renderLibrary();
+}
+
+/* =============================================================
+   LRCLIB API
+   ============================================================= */
+function fetchWithTimeout(url, ms = 10000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
+async function searchLRCLIB(query) {
+  // Tenta o proxy do servidor local primeiro (evita bloqueio de CORS do navegador),
+  // com fallback para a API direta (ex.: quando hospedado sem o servidor Python).
+  // Cada tentativa tem timeout para o app não travar se a API estiver fora.
+  const attempts = [
+    [`/api/search_lrc?q=${encodeURIComponent(query)}`, 6000],
+    [`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`, 4000],
+  ];
+  let lastErr;
+  for (const [url, ms] of attempts) {
+    try {
+      const res = await fetchWithTimeout(url, ms);
+      if (!res.ok) { lastErr = new Error('HTTP ' + res.status); continue; }
+      return await res.json();
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('Erro na busca');
+}
+
+function parseLRC(syncedLyrics) {
+  if (!syncedLyrics) return [];
+  const lines = syncedLyrics.split('\n');
+  const result = [];
+  for (const line of lines) {
+    const m = line.match(/\[(\d+):(\d+(?:\.\d+)?)\]\s*(.*)/);
+    if (m) {
+      const time = parseInt(m[1]) * 60 + parseFloat(m[2]);
+      const text = m[3].trim();
+      if (text) result.push({ time, text });
+    }
+  }
+  return result;
+}
+
+/* =============================================================
+   TRANSLATION — Google Translate API (gtx)
+   ============================================================= */
+async function translateText(text) {
+  try {
+    const res = await fetch(
+      `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt-br&dt=t&q=${encodeURIComponent(text)}`
+    );
+    const data = await res.json();
+    if (data && data[0]) {
+      return data[0].map(s => s[0]).join('');
+    }
+  } catch (e) {
+    console.error('Translation error:', e);
+  }
+  return '';
+}
+
+async function translateLines(lines, onProgress) {
+  const results = [];
+  // Batch: send a few lines at a time to avoid rate limits
+  for (let i = 0; i < lines.length; i++) {
+    const text = lines[i].text;
+    if (text.length < 3) { results.push(text); continue; }
+    const translated = await translateText(text);
+    results.push(translated || '(clique para traduzir)');
+    if (onProgress) onProgress(i + 1, lines.length);
+    // small delay to avoid rate limiting
+    if (i < lines.length - 1) await sleep(120);
+  }
+  return results;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* =============================================================
+   YOUTUBE IFRAME PLAYER
+   ============================================================= */
+let ytAPILoading = false;
+
+function loadYouTubeAPI() {
+  return new Promise((resolve, reject) => {
+    if (window.YT && window.YT.Player) { resolve(); return; }
+    if (ytAPILoading) {
+      // Already loading, wait for it
+      const check = setInterval(() => {
+        if (window.YT && window.YT.Player) { clearInterval(check); resolve(); }
+      }, 100);
+      return;
+    }
+    ytAPILoading = true;
+    window.onYouTubeIframeAPIReady = () => { resolve(); };
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    tag.onerror = () => reject(new Error('Falha ao carregar YouTube API'));
+    document.head.appendChild(tag);
+    // Timeout fallback
+    setTimeout(() => {
+      if (!window.YT || !window.YT.Player) {
+        reject(new Error('Timeout ao carregar YouTube API'));
+      }
+    }, 10000);
+  });
+}
+
+function extractVideoId(url) {
+  if (!url) return null;
+  // Handle various YouTube URL formats
+  const patterns = [
+    /(?:youtube\.com\/watch\?.*v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&?\/#]+)/,
+    /^([a-zA-Z0-9_-]{11})$/  // Just the video ID
+  ];
+  for (const pat of patterns) {
+    const m = url.trim().match(pat);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+function initYTPlayer(videoId) {
+  return new Promise((resolve, reject) => {
+    // Destroy existing player to avoid state issues
+    if (ytPlayer) {
+      try {
+        ytPlayer.destroy();
+      } catch (e) { /* ignore */ }
+      ytPlayer = null;
+      ytReady = false;
+      // Recreate the container div
+      const container = document.getElementById('ytContainer');
+      container.innerHTML = '<div id="ytPlayer"></div>';
+    }
+
+    try {
+      ytPlayer = new YT.Player('ytPlayer', {
+        width: '100%', height: '100%',
+        videoId: videoId,
+        playerVars: {
+          controls: 1,
+          modestbranding: 1,
+          rel: 0,
+          fs: 0,
+          playsinline: 1,
+          enablejsapi: 1,
+          autoplay: 0,
+        },
+        events: {
+          onReady: () => {
+            ytReady = true;
+            resolve();
+          },
+          onStateChange: onYTStateChange,
+          onError: (e) => {
+            console.error('YouTube Error:', e.data);
+            const msgs = {
+              2: 'ID de vídeo inválido',
+              5: 'Erro no player HTML5',
+              100: 'Vídeo não encontrado ou removido',
+              101: 'Vídeo não permite reprodução embutida',
+              150: 'Vídeo não permite reprodução embutida',
+            };
+            const msg = msgs[e.data] || 'Erro desconhecido (' + e.data + ')';
+            document.getElementById('playerStatus').innerHTML =
+              '⚠️ <b>Erro YouTube:</b> ' + msg + '. Tente outro link.';
+          },
+        }
+      });
+    } catch (e) {
+      reject(e);
+    }
+
+    // Timeout safety
+    setTimeout(() => {
+      if (!ytReady) {
+        resolve(); // resolve anyway so the UI doesn't hang
+        document.getElementById('playerStatus').innerHTML =
+          '⚠️ YouTube demorou para carregar. Use os controles do player.';
+      }
+    }, 8000);
+  });
+}
+
+function onYTStateChange(e) {
+  const playBtn = document.getElementById('playBtn');
+  try {
+    if (e.data === YT.PlayerState.PLAYING) {
+      playBtn.textContent = '❚❚';
+      playBtn.disabled = false;
+      startSync();
+    } else if (e.data === YT.PlayerState.PAUSED) {
+      playBtn.textContent = '▶';
+      stopSync();
+    } else if (e.data === YT.PlayerState.ENDED) {
+      playBtn.textContent = '▶';
+      stopSync();
+    } else if (e.data === YT.PlayerState.CUED) {
+      playBtn.disabled = false;
+      document.getElementById('playerStatus').innerHTML = 'Pronto! Pressione <b>▶</b> ou clique no player do YouTube';
+    }
+  } catch (err) { /* ignore state change errors */ }
+}
+
+function startSync() {
+  stopSync();
+  syncInterval = setInterval(updateSync, 80);
+}
+
+function stopSync() {
+  if (syncInterval) { clearInterval(syncInterval); syncInterval = null; }
+}
+
+/* =============================================================
+   FORMAT HELPERS
+   ============================================================= */
+function fmt(s) {
+  if (isNaN(s) || s < 0) return '0:00';
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return m + ':' + String(sec).padStart(2, '0');
+}
+
+function generateSongId(title, artist) {
+  return (title + '_' + artist).toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+}
+
+/* =============================================================
+   HOME SCREEN
+   ============================================================= */
+/* ---- Busca ao vivo via iTunes (tolerante a erros de digitação) ---- */
+let _searchSeq = 0;      // invalida respostas antigas em buscas concorrentes
+let _searchTimer = null; // debounce da digitação
+
+async function searchITunes(term) {
+  // Tenta o proxy serverless primeiro (evita CORS em navegadores móveis),
+  // com fallback para a API direta.
+  const attempts = [
+    [`/api/search_itunes?term=${encodeURIComponent(term)}`, 8000],
+    [`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&media=music&limit=18`, 6000],
+  ];
+  let lastErr;
+  for (const [url, ms] of attempts) {
+    try {
+      const res = await fetchWithTimeout(url, ms);
+      if (!res.ok) { lastErr = new Error('HTTP ' + res.status); continue; }
+      const d = await res.json();
+      return (d.results || []).map(r => ({
+        id: r.trackId,
+        trackName: r.trackName,
+        artistName: r.artistName,
+        albumName: r.collectionName || '',
+        duration: r.trackTimeMillis ? Math.round(r.trackTimeMillis / 1000) : 0,
+        artwork: (r.artworkUrl100 || '').replace('100x100', '160x160'),
+      }));
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('Erro na busca');
+}
+
+// Chamada a cada tecla: espera o usuário parar de digitar (debounce) e busca.
+function onSearchInput() {
+  clearTimeout(_searchTimer);
+  const q = document.getElementById('searchInput').value.trim();
+  if (q.length < 2) {
+    _searchSeq++; // cancela buscas pendentes
+    document.getElementById('searchArea').classList.add('hidden');
+    return;
+  }
+  _searchTimer = setTimeout(doSearch, 350);
+}
+
+// Enter ou botão "Buscar": busca imediata, sem esperar o debounce.
+function triggerSearchNow() {
+  clearTimeout(_searchTimer);
+  doSearch();
+}
+
+async function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  const area = document.getElementById('searchArea');
+  const results = document.getElementById('searchResults');
+  if (!q) { area.classList.add('hidden'); return; }
+
+  const seq = ++_searchSeq;
+  area.classList.remove('hidden');
+  results.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+
+  let data = [];
+  let searchError = null;
+  try {
+    data = await searchITunes(q);
+  } catch (e) {
+    console.error('Search error:', e);
+    searchError = e;
+  }
+
+  if (seq !== _searchSeq) return; // uma busca mais nova começou; descarta esta
+
+  if (!data.length) {
+    if (searchError) {
+      results.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Erro ao buscar. Verifique sua conexão e tente novamente.</p></div>';
+    } else {
+      results.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Nenhum resultado encontrado.<br>Tente outro nome de música ou artista.</p></div>';
+    }
+    window._searchResults = [];
+    return;
+  }
+
+  // Remove duplicatas (mesma música em álbuns diferentes)
+  const seen = new Map();
+  for (const item of data) {
+    const key = (item.trackName + '|' + item.artistName).toLowerCase();
+    if (!seen.has(key)) seen.set(key, item);
+  }
+  const unique = [...seen.values()].slice(0, 12);
+
+  results.innerHTML = unique.map((item, i) => `
+    <div class="result-card" style="animation-delay:${i * .05}s"
+         onclick="selectResult(${item.id})" data-id="${item.id}">
+      <div style="display:flex;gap:14px;align-items:center;">
+        ${item.artwork ? `<img src="${esc(item.artwork)}" alt="" style="width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'">` : ''}
+        <div style="min-width:0;flex:1;">
+          <div class="card-title">${esc(item.trackName)}</div>
+          <div class="card-artist">${esc(item.artistName)}</div>
+          <div class="card-meta">
+            <span>${item.albumName ? esc(item.albumName) : ''}</span>
+            <span>${item.duration ? fmt(item.duration) : ''}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  window._searchResults = unique;
+}
+
+async function selectResult(id) {
+  const item = window._searchResults?.find(r => r.id === id);
+  if (!item) return;
+  state.pendingSong = item;
+  state.currentSong = null;
+
+  // Mostra feedback visual no card clicado
+  const card = document.querySelector(`.result-card[data-id="${id}"]`);
+  let originalHtml = '';
+  if (card) {
+    originalHtml = card.innerHTML;
+    card.innerHTML += '<div style="font-size:.85rem;color:var(--blue);margin-top:8px;padding-left:2px;">Buscando áudio e letra...</div>';
+  }
+
+  // Busca a letra (lrclib com sincronia; senão lyrics.ovh) e o vídeo em paralelo.
+  const [lyrics, videoId] = await Promise.all([
+    fetchLyricsFor(item).catch(() => null),
+    fetchYouTubeId(item).catch(() => null),
+  ]);
+
+  if (lyrics) {
+    item.syncedLyrics = lyrics.syncedLyrics || null;
+    item.plainLyrics = lyrics.plainLyrics || null;
+    if (!item.duration && lyrics.duration) item.duration = lyrics.duration;
+  }
+
+  if (!item.syncedLyrics && !item.plainLyrics) {
+    if (card) card.innerHTML = originalHtml;
+    showToast('Não encontrei a letra dessa música. Tente outra versão.');
+    return;
+  }
+
+  if (videoId) {
+    processSong(item, videoId);
+    return; // Sucesso! Ignora o modal manual.
+  }
+
+  // Sem vídeo automático: pede o link manual (a letra já foi obtida).
+  if (card) card.innerHTML = originalHtml;
+  resetYtModalUI();
+  document.getElementById('ytUrlInput').value = '';
+  openModal('ytModal');
+}
+
+// Normaliza para comparar nomes (minúsculas, sem acentos e sem pontuação).
+function normName(s) {
+  // normalize('NFD') separa os acentos; o [^a-z0-9] abaixo já os remove.
+  return (s || '').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+// Busca a letra da música já com o nome correto vindo do iTunes.
+async function fetchLyricsFor(item) {
+  const q = `${item.artistName} ${item.trackName}`;
+  const wantT = normName(item.trackName);
+  const wantA = normName(item.artistName);
+  // 1) lrclib — letra COM sincronia (fonte preferida). Escolhe pelo NOME
+  //    (artista + título), não pela duração, para não pegar a música errada.
+  try {
+    const list = await searchLRCLIB(q);
+    if (Array.isArray(list) && list.length) {
+      const scored = list.map(x => {
+        const t = normName(x.trackName), a = normName(x.artistName);
+        let s = 0;
+        if (t === wantT) s += 4; else if (t.includes(wantT) || wantT.includes(t)) s += 2;
+        if (a === wantA) s += 3; else if (a.includes(wantA) || wantA.includes(a)) s += 1;
+        if (x.syncedLyrics) s += 2;                       // prefere sincronizada
+        if (item.duration && x.duration)                  // duração só como desempate
+          s += Math.max(0, 1 - Math.abs(x.duration - item.duration) / 45);
+        return { x, s };
+      }).sort((p, q2) => q2.s - p.s);
+      const best = scored[0];
+      // exige um casamento mínimo de nome para não trazer letra de outra música
+      if (best && best.s >= 3 && (best.x.syncedLyrics || best.x.plainLyrics)) return best.x;
+    }
+  } catch { /* tenta o fallback */ }
+  // 2) lyrics.ovh — letra simples (sem sincronia), com o nome já corrigido
+  try {
+    const res = await fetchWithTimeout(`/api/lyrics_fallback?q=${encodeURIComponent(q)}`, 12000);
+    if (res.ok) { const d = await res.json(); if (d && d[0]) return d[0]; }
+  } catch {}
+  return null;
+}
+
+async function fetchYouTubeId(item) {
+  const q = encodeURIComponent(item.artistName + ' ' + item.trackName + ' audio');
+  const res = await fetchWithTimeout(`/api/search_yt?q=${q}`, 10000);
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.videoId || null;
+}
+
+function resetYtModalUI() {
+  document.getElementById('ytModal').querySelector('p').textContent = 'Cole o link do vídeo do YouTube com o áudio da música';
+  document.getElementById('ytInputs').style.display = 'block';
+  document.getElementById('ytDivider').style.display = 'block';
+}
+
+async function confirmYouTube() {
+  const url = document.getElementById('ytUrlInput').value.trim();
+  const videoId = extractVideoId(url);
+  if (!videoId) {
+    showToast('URL inválida. Cole um link do YouTube válido.');
+    return;
+  }
+  closeModal('ytModal');
+  await processSong(state.pendingSong, videoId, false);
+}
+
+function confirmLocalAudio(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    tempLocalAudioUrl = URL.createObjectURL(file);
+    closeModal('ytModal');
+    
+    if (state.pendingSong) {
+      processSong(state.pendingSong, null, true);
+    } else if (state.currentSong && state.currentSong.isLocal) {
+      // Re-uploading MP3 for an existing saved song
+      openPlayer(state.currentSong);
+    }
+  }
+  input.value = '';
+}
+
+/* =============================================================
+   PROCESS SONG — Parse, Translate, Phonetize, Save
+   ============================================================= */
+function colorizeByWords(text, colorIdx1, colorIdx2) {
+  if (!text) return [];
+  const words = text.trim().split(/\s+/);
+  if (words.length <= 1) return [[text.trim(), colorIdx1]];
+  
+  const half = Math.ceil(words.length / 2);
+  let charIdx = 0;
+  for (let i = 0; i < half; i++) {
+    const wordIndex = text.indexOf(words[i], charIdx);
+    charIdx = wordIndex + words[i].length;
+  }
+  
+  const part1 = text.slice(0, charIdx).trim();
+  const part2 = text.slice(charIdx).trim();
+  return [[part1, colorIdx1], [part2, colorIdx2]].filter(g => g[0]);
+}
+
+async function processSong(item, videoId, isLocal = false) {
+  openModal('processModal');
+  const info = document.getElementById('processingSongInfo');
+  info.textContent = `${item.trackName} — ${item.artistName}`;
+
+  const updateStep = (n, status) => {
+    const el = document.getElementById('pstep' + n);
+    el.className = 'pstep ' + status;
+    el.querySelector('.picon').textContent = status === 'done' ? '✅' : status === 'active' ? '⟳' : '○';
+    document.getElementById('processBarFill').style.width = (n / 4 * 100) + '%';
+  };
+
+  // Step 1: Parse lyrics
+  updateStep(1, 'active');
+  await sleep(300);
+  let lrcLines = [];
+  if (item.syncedLyrics) {
+    lrcLines = parseLRC(item.syncedLyrics);
+  } else if (item.plainLyrics) {
+    // No synced lyrics — distribute evenly based on duration
+    const plain = item.plainLyrics.split('\n').filter(l => l.trim());
+    const gap = item.duration / (plain.length + 1);
+    lrcLines = plain.map((text, i) => ({ time: gap * (i + 1), text }));
+  }
+  updateStep(1, 'done');
+
+  // Step 2: Translate
+  updateStep(2, 'active');
+  let translations = [];
+  try {
+    translations = await translateLines(lrcLines, (done, total) => {
+      info.textContent = `Traduzindo ${done}/${total}...`;
+    });
+  } catch {
+    translations = lrcLines.map(() => '(clique para traduzir)');
+  }
+  info.textContent = `${item.trackName} — ${item.artistName}`;
+  updateStep(2, 'done');
+
+  // Step 3: Phonetics
+  updateStep(3, 'active');
+  await sleep(200);
+  const phonetics = lrcLines.map(l => phonetizeLine(l.text));
+  updateStep(3, 'done');
+
+  // Step 4: Build & Save
+  updateStep(4, 'active');
+  await sleep(200);
+
+  // Build structured song data
+  const songId = generateSongId(item.trackName, item.artistName) + '_' + item.id;
+  const lyrics = lrcLines.map((l, i) => {
+    const words = l.text.split(/\s+/);
+    const halfLen = Math.ceil(words.length / 2);
+    const colorIdx = (i % 6) + 1;
+    const colorIdx2 = ((i + 1) % 6) + 1;
+    const wordData = words.map((w, wi) => [w, wi < halfLen ? colorIdx : colorIdx2]);
+
+    // Calculate end time
+    const nextTime = (i < lrcLines.length - 1) ? lrcLines[i + 1].time : l.time + 4;
+
+    // Translation color groups
+    const ptText = translations[i] || '';
+    const ptGroups = colorizeByWords(ptText, colorIdx, colorIdx2);
+
+    // Phonetic color groups
+    const phText = phonetics[i] || '';
+    const phGroups = colorizeByWords(phText, colorIdx, colorIdx2);
+
+    return {
+      start: l.time,
+      end: nextTime,
+      words: wordData,
+      pt: ptGroups,
+      ph: phGroups,
+      ptRaw: ptText,
+      phRaw: phText,
+    };
+  });
+
+  // Insert section tags based on gaps
+  const finalLyrics = [];
+  let sectionNum = 1;
+  for (let i = 0; i < lyrics.length; i++) {
+    if (i === 0) {
+      finalLyrics.push({ tag: 'Início' });
+    } else {
+      const gap = lyrics[i].start - lyrics[i - 1].end;
+      if (gap > 5) {
+        finalLyrics.push({ tag: `Seção ${sectionNum++}` });
+      }
+    }
+    finalLyrics.push(lyrics[i]);
+  }
+
+  const song = {
+    id: songId,
+    lrclibId: item.id,
+    title: item.trackName,
+    artist: item.artistName,
+    album: item.albumName || '',
+    duration: item.duration,
+    videoId: videoId,
+    isLocal: isLocal,
+    lyrics: finalLyrics,
+    lastPlayed: new Date().toISOString(),
+  };
+
+  saveSong(song);
+  updateStep(4, 'done');
+  await sleep(500);
+
+  closeModal('processModal');
+  resetProcessModal();
+  openPlayer(song);
+}
+
+function resetProcessModal() {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('pstep' + i);
+    el.className = 'pstep';
+    el.querySelector('.picon').textContent = '○';
+  }
+  document.getElementById('processBarFill').style.width = '0%';
+}
+
+/* =============================================================
+   LIBRARY RENDERING
+   ============================================================= */
+function renderLibrary() {
+  const grid = document.getElementById('libraryGrid');
+  if (!state.library.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📚</div>
+        <p>Sua biblioteca está vazia.<br>Busque uma música acima para começar!</p>
+      </div>`;
+    return;
+  }
+  grid.innerHTML = state.library.map(song => `
+    <div class="lib-card" onclick="openSavedSong('${esc(song.id)}')">
+      <button class="card-delete" onclick="event.stopPropagation();deleteSong('${esc(song.id)}')" title="Remover">✕</button>
+      <div class="card-title">${esc(song.title)}</div>
+      <div class="card-artist">${esc(song.artist)}</div>
+      <div class="card-meta">
+        <span>${esc(song.album)}</span>
+        <span>${fmt(song.duration)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openSavedSong(id) {
+  const song = state.library.find(s => s.id === id);
+  if (song) openPlayer(song);
+}
+
+/* =============================================================
+   PLAYER SCREEN
+   ============================================================= */
+async function openPlayer(song) {
+  if (song.isLocal && !tempLocalAudioUrl) {
+    // Missing local MP3 for this song, ask user to re-upload
+    state.pendingSong = null;
+    state.currentSong = song;
+    resetYtModalUI();
+    document.getElementById('ytModal').querySelector('p').innerHTML = 'Esta música usa um arquivo <b>MP3 local</b>.<br>Por favor, selecione o arquivo no seu PC para continuar.';
+    document.getElementById('ytInputs').style.display = 'none';
+    document.getElementById('ytDivider').style.display = 'none';
+    openModal('ytModal');
+    return;
+  }
+
+  state.currentSong = song;
+  state.currentScreen = 'player';
+
+  document.getElementById('homeScreen').classList.add('hidden');
+  document.getElementById('playerScreen').classList.remove('hidden');
+  document.getElementById('playerScreen').style.animation = 'none';
+  requestAnimationFrame(() => {
+    document.getElementById('playerScreen').style.animation = '';
+  });
+
+  document.getElementById('songTitle').textContent = song.title;
+  document.getElementById('songArtist').textContent = song.artist + (song.album ? ' · ' + song.album : '');
+
+  buildLyrics(song.lyrics);
+
+  const playBtn = document.getElementById('playBtn');
+  const statusEl = document.getElementById('playerStatus');
+  const durTimeEl = document.getElementById('durTime');
+  const ytCont = document.getElementById('ytContainer');
+  const localAudioIcon = document.getElementById('localAudioIcon');
+  const localAudioEl = document.getElementById('localAudioEl');
+
+  playBtn.disabled = true;
+  durTimeEl.textContent = fmt(song.duration);
+
+  if (song.isLocal) {
+    audioMode = 'local';
+    ytCont.classList.add('hidden');
+    localAudioIcon.classList.remove('hidden');
+    statusEl.innerHTML = 'Carregando MP3...';
+
+    // Stop and clear YouTube if it was active
+    if (ytPlayer) {
+      try { ytPlayer.destroy(); } catch {}
+      ytPlayer = null;
+      ytReady = false;
+    }
+
+    localAudioEl.src = tempLocalAudioUrl;
+    localAudioEl.load();
+    localAudioEl.oncanplay = () => {
+      playBtn.disabled = false;
+      playBtn.textContent = '▶';
+      statusEl.innerHTML = 'MP3 Carregado! Pressione <b>▶</b> para começar';
+    };
+    localAudioEl.onplay = () => { playBtn.textContent = '❚❚'; startSync(); };
+    localAudioEl.onpause = () => { playBtn.textContent = '▶'; stopSync(); };
+    localAudioEl.onended = () => { playBtn.textContent = '▶'; stopSync(); };
+    localAudioEl.onerror = () => {
+      statusEl.innerHTML = '⚠️ Erro ao carregar arquivo de áudio.';
+      playBtn.disabled = false;
+    };
+  } else {
+    audioMode = 'yt';
+    ytCont.classList.remove('hidden');
+    localAudioIcon.classList.add('hidden');
+    localAudioEl.src = '';
+    localAudioEl.onplay = null;
+    localAudioEl.onpause = null;
+
+    statusEl.innerHTML = 'Carregando YouTube...';
+
+    await sleep(200);
+
+    try {
+      await loadYouTubeAPI();
+      await initYTPlayer(song.videoId);
+      playBtn.disabled = false;
+      statusEl.innerHTML = 'Pronto! Pressione <b>▶</b> ou clique no player do YouTube';
+    } catch (e) {
+      console.error('YouTube error:', e);
+      statusEl.innerHTML = '⚠️ Erro ao carregar YouTube. Tente recarregar a página.';
+      playBtn.disabled = false;
+    }
+  }
+}
+
+function goHome() {
+  stopSync();
+  // Destroy the YouTube player to avoid stale state
+  if (ytPlayer) {
+    try { ytPlayer.destroy(); } catch {}
+    ytPlayer = null;
+    ytReady = false;
+    const container = document.getElementById('ytContainer');
+    if (container) container.innerHTML = '<div id="ytPlayer"></div>';
+  }
+  const localAudioEl = document.getElementById('localAudioEl');
+  if (localAudioEl) {
+    localAudioEl.pause();
+    localAudioEl.src = '';
+  }
+  
+  tempLocalAudioUrl = null;
+  state.currentScreen = 'home';
+  state.currentSong = null;
+  state.editing = false;
+  document.body.classList.remove('editing');
+
+  document.getElementById('playerScreen').classList.add('hidden');
+  document.getElementById('homeScreen').classList.remove('hidden');
+  document.getElementById('homeScreen').style.animation = 'none';
+  requestAnimationFrame(() => {
+    document.getElementById('homeScreen').style.animation = '';
+  });
+  renderLibrary();
+}
+
+/* =============================================================
+   BUILD LYRICS UI
+   ============================================================= */
+function buildLyrics(lyrics) {
+  const main = document.getElementById('lyrics');
+  main.innerHTML = '';
+  lineEls = [];
+  lineMeta = [];
+
+  lyrics.forEach((item, i) => {
+    if (item.tag) {
+      const t = document.createElement('div');
+      t.className = 'tag';
+      t.textContent = item.tag;
+      main.appendChild(t);
+      return;
+    }
+
+    const n = item.words.length;
+    const span = item.end - item.start;
+    // Weighted word timing by character length
+    const charLens = item.words.map(([w]) => Math.max(w.length, 1));
+    const totalChars = charLens.reduce((a, b) => a + b, 0);
+    let cumTime = item.start;
+    const wtimes = charLens.map(len => {
+      const t = cumTime;
+      cumTime += span * (len / totalChars);
+      return t;
+    });
+
+    const div = document.createElement('div');
+    div.className = 'line';
+    div.dataset.idx = i;
+
+    let enHtml = '';
+    item.words.forEach(([tx, u]) => {
+      enHtml += `<span class="w" style="--uc:${COLORS[u]||'#fff'}">${esc(tx)}<span class="fill-w">${esc(tx)}</span></span> `;
+    });
+
+    const colorize = arr => arr.map(([tx, u]) => `<span class="u" style="--uc:${COLORS[u]||'#fff'}">${esc(tx)}</span>`).join(' ');
+
+    div.innerHTML =
+      `<span class="time-badge">${fmt(item.start)}</span>` +
+      `<button class="mark-btn edit-only" onclick="markStart(${i},event)">marcar início</button>` +
+      `<button class="line-edit-btn" onclick="openLineEdit(${i},event)">editar</button>` +
+      `<div class="en">${enHtml}</div>` +
+      `<div class="pt${state.showPt ? '' : ' off'}">${colorize(item.pt)}</div>` +
+      `<div class="ph${state.showPh ? '' : ' off'}">${colorize(item.ph)}</div>`;
+
+    div.addEventListener('click', e => {
+      if (e.target.classList.contains('mark-btn') || e.target.classList.contains('line-edit-btn')) return;
+      if (audioMode === 'local') {
+        const localAudioEl = document.getElementById('localAudioEl');
+        if (localAudioEl) {
+          localAudioEl.currentTime = item.start;
+          if (localAudioEl.paused) localAudioEl.play();
+        }
+      } else if (ytPlayer && ytReady) {
+        ytPlayer.seekTo(item.start, true);
+        const playerState = ytPlayer.getPlayerState();
+        if (playerState !== YT.PlayerState.PLAYING) togglePlay();
+      }
+    });
+
+    main.appendChild(div);
+    lineEls[i] = div;
+    lineMeta.push({
+      idx: i, start: item.start, end: item.end,
+      wtimes, wordEls: [...div.querySelectorAll('.fill-w')]
+    });
+  });
+
+  lineMeta.sort((a, b) => a.start - b.start);
+}
+
+/* =============================================================
+   KARAOKE SYNC ENGINE
+   ============================================================= */
+function updateSync() {
+  let rawT = 0;
+  let dur = 0;
+  
+  if (audioMode === 'yt') {
+    if (!ytPlayer || !ytReady) return;
+    rawT = ytPlayer.getCurrentTime();
+    dur = ytPlayer.getDuration();
+  } else {
+    const localAudioEl = document.getElementById('localAudioEl');
+    if (!localAudioEl) return;
+    rawT = localAudioEl.currentTime;
+    dur = localAudioEl.duration || state.currentSong?.duration || 0;
+  }
+
+  document.getElementById('curTime').textContent = fmt(rawT);
+  document.getElementById('progressFill').style.width = (rawT / dur * 100 || 0) + '%';
+  if (dur && !isNaN(dur)) document.getElementById('durTime').textContent = fmt(dur);
+
+  // Apply anticipation offset (350ms) so lyrics light up slightly before the audio
+  let t = rawT + 0.35; 
+
+  let activeIdx = -1;
+  for (const m of lineMeta) {
+    if (t >= m.start) activeIdx = m.idx;
+    else break;
+  }
+
+  lineMeta.forEach(m => {
+    const el = lineEls[m.idx];
+    if (!el) return;
+    el.classList.remove('active', 'sung');
+
+    if (m.idx === activeIdx) {
+      el.classList.add('active');
+      m.wordEls.forEach((fw, k) => {
+        const ws = m.wtimes[k];
+        const we = (k < m.wtimes.length - 1) ? m.wtimes[k + 1] : m.end;
+        let p = ((t - ws) / (we - ws)) * 3.0; // Fills 3x faster
+        p = p < 0 ? 0 : p > 1 ? 1 : p;
+        fw.style.width = (p * 100) + '%';
+      });
+    } else if (activeIdx > -1 && m.idx < activeIdx) {
+      el.classList.add('sung');
+      m.wordEls.forEach(fw => fw.style.width = '100%');
+    } else {
+      m.wordEls.forEach(fw => fw.style.width = '0%');
+    }
+  });
+
+  if (activeIdx > -1 && !state.editing) {
+    lineEls[activeIdx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+/* =============================================================
+   PLAYER CONTROLS
+   ============================================================= */
+function togglePlay() {
+  if (audioMode === 'local') {
+    const localAudioEl = document.getElementById('localAudioEl');
+    if (localAudioEl.paused) localAudioEl.play();
+    else localAudioEl.pause();
+    return;
+  }
+
+  if (!ytPlayer) return;
+  try {
+    if (!ytReady) {
+      ytPlayer.playVideo();
+      return;
+    }
+    const playerState = ytPlayer.getPlayerState();
+    if (playerState === YT.PlayerState.PLAYING) {
+      ytPlayer.pauseVideo();
+    } else {
+      ytPlayer.playVideo();
+    }
+  } catch (e) {
+    console.error('Play error:', e);
+    document.getElementById('playerStatus').innerHTML =
+      '⚠️ Erro ao reproduzir. Clique diretamente no player do YouTube.';
+  }
+}
+
+function cycleSpeed() {
+  speedIdx = (speedIdx + 1) % SPEEDS.length;
+  if (audioMode === 'yt') {
+    if (ytPlayer && ytReady) ytPlayer.setPlaybackRate(SPEEDS[speedIdx]);
+  } else {
+    const localAudioEl = document.getElementById('localAudioEl');
+    if (localAudioEl) localAudioEl.playbackRate = SPEEDS[speedIdx];
+  }
+  document.getElementById('speedBtn').textContent = SPEEDS[speedIdx] + '×';
+}
+
+document.getElementById('progressBar').addEventListener('click', e => {
+  let dur = 0;
+  if (audioMode === 'yt') {
+    if (!ytPlayer || !ytReady) return;
+    dur = ytPlayer.getDuration();
+  } else {
+    const localAudioEl = document.getElementById('localAudioEl');
+    if (!localAudioEl) return;
+    dur = localAudioEl.duration || state.currentSong?.duration;
+  }
+  if (!dur) return;
+
+  const r = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX - r.left) / r.width;
+  
+  if (audioMode === 'yt') {
+    ytPlayer.seekTo(pct * dur, true);
+  } else {
+    document.getElementById('localAudioEl').currentTime = pct * dur;
+  }
+});
+
+/* =============================================================
+   TOGGLE LAYERS
+   ============================================================= */
+function toggleLayer(layer) {
+  if (layer === 'pt') {
+    state.showPt = !state.showPt;
+    document.getElementById('togglePt').classList.toggle('on', state.showPt);
+    document.querySelectorAll('.pt').forEach(el => el.classList.toggle('off', !state.showPt));
+  } else {
+    state.showPh = !state.showPh;
+    document.getElementById('togglePh').classList.toggle('on', state.showPh);
+    document.querySelectorAll('.ph').forEach(el => el.classList.toggle('off', !state.showPh));
+  }
+}
+
+function toggleEditMode() {
+  state.editing = !state.editing;
+  document.body.classList.toggle('editing', state.editing);
+  document.getElementById('toggleEdit').classList.toggle('on', state.editing);
+  const status = document.getElementById('playerStatus');
+  status.innerHTML = state.editing
+    ? 'Modo ajuste: toque a música e clique <b>marcar início</b>'
+    : 'Modo ajuste desligado.';
+}
+
+/* =============================================================
+   MARK / EDIT TIMING
+   ============================================================= */
+function markStart(i, e) {
+  e.stopPropagation();
+  let t = 0;
+  
+  if (audioMode === 'yt') {
+    if (!ytPlayer || !ytReady) return;
+    t = ytPlayer.getCurrentTime();
+  } else {
+    const localAudioEl = document.getElementById('localAudioEl');
+    if (!localAudioEl) return;
+    t = localAudioEl.currentTime;
+  }
+  
+  const song = state.currentSong;
+  if (!song) return;
+
+  song.lyrics[i].start = parseFloat(t.toFixed(2));
+  lineEls[i].querySelector('.time-badge').textContent = fmt(t);
+  rebuildMeta();
+  saveSong(song);
+  showToast(`Início marcado em ${fmt(t)}`);
+}
+
+function rebuildMeta() {
+  const song = state.currentSong;
+  lineMeta.forEach(m => {
+    const item = song.lyrics[m.idx];
+    if (!item || item.tag) return;
+    const n = item.words.length;
+    const span = item.end - item.start;
+    const charLens = item.words.map(([w]) => Math.max(w.length, 1));
+    const totalChars = charLens.reduce((a, b) => a + b, 0);
+    let cumTime = item.start;
+    m.start = item.start;
+    m.end = item.end;
+    m.wtimes = charLens.map(len => {
+      const t = cumTime;
+      cumTime += span * (len / totalChars);
+      return t;
+    });
+  });
+  lineMeta.sort((a, b) => a.start - b.start);
+}
+
+/* =============================================================
+   EDIT LINE MODAL
+   ============================================================= */
+function openLineEdit(i, e) {
+  e.stopPropagation();
+  const song = state.currentSong;
+  if (!song) return;
+  const item = song.lyrics[i];
+  if (!item || item.tag) return;
+
+  document.getElementById('editEn').textContent = item.words.map(w => w[0]).join(' ');
+  document.getElementById('editPtInput').value = item.ptRaw || '';
+  document.getElementById('editPhInput').value = item.phRaw || '';
+  document.getElementById('editLineIdx').value = i;
+  openModal('editLineModal');
+}
+
+function saveLineEdit() {
+  const i = parseInt(document.getElementById('editLineIdx').value);
+  const song = state.currentSong;
+  if (!song || isNaN(i)) return;
+  const item = song.lyrics[i];
+  if (!item) return;
+
+  const ptText = document.getElementById('editPtInput').value;
+  const phText = document.getElementById('editPhInput').value;
+  const colorIdx = ((i) % 6) + 1;
+  const colorIdx2 = ((i + 1) % 6) + 1;
+
+  item.pt = colorizeByWords(ptText, colorIdx, colorIdx2);
+  item.ptRaw = ptText;
+
+  item.ph = colorizeByWords(phText, colorIdx, colorIdx2);
+  item.phRaw = phText;
+
+  saveSong(song);
+  buildLyrics(song.lyrics);
+  closeModal('editLineModal');
+  showToast('Linha editada e salva!');
+}
+
+/* =============================================================
+   MODAL HELPERS
+   ============================================================= */
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => {
+    if (e.target === el) {
+      // Don't close processing modal
+      if (el.id !== 'processModal') el.classList.add('hidden');
+    }
+  });
+});
+
+/* =============================================================
+   TOAST
+   ============================================================= */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  t.style.animation = 'none';
+  requestAnimationFrame(() => { t.style.animation = ''; });
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.add('hidden'), 2500);
+}
+
+/* =============================================================
+   ESCAPE HTML
+   ============================================================= */
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* =============================================================
+   INIT
+   ============================================================= */
+function init() {
+  loadLibrary();
+  renderLibrary();
+}
+
+init();
+</script>
+</body>
+</html>
