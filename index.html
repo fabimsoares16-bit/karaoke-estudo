@@ -1958,58 +1958,111 @@ function openPrintView() {
     const a = document.getElementById('localAudioEl'); if (a) a.pause();
   }
 
-  // Agrupa as linhas por seções (entre tags)
-  const sections = [];
-  let cur = null;
-  for (const item of song.lyrics) {
-    if (item.tag) {
-      if (cur && cur.lines.length) sections.push(cur);
-      cur = { tag: item.tag, lines: [] };
-    } else {
-      if (!cur) cur = { tag: '', lines: [] };
-      cur.lines.push(item);
-    }
-  }
-  if (cur && cur.lines.length) sections.push(cur);
+  // Extrai apenas as linhas com palavras (ignora as tags de tempo)
+  const lines = song.lyrics.filter(l => !l.tag);
+  const N = lines.length;
+  
+  // Normaliza o texto para comparar facilmente
+  const norm = lines.map(l => l.words.map(w => w[0]).join(' ').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim());
 
-  // Fingerprint de cada seção pelo texto em inglês
-  const fps = sections.map(s =>
-    s.lines.map(l => l.words.map(w => w[0]).join(' ').toLowerCase().trim()).join('|')
-  );
+  let covered = new Array(N).fill(false);
+  let patternNames = ['Refrão', 'Pré-refrão', 'Ponte', 'Refrão B', 'Pós-refrão', 'Outro'];
+  let pId = 0;
+  const blockAssignments = new Array(N).fill(null);
 
-  // Conta quantas vezes cada fingerprint aparece
-  const fpCount = {};
-  fps.forEach(fp => { fpCount[fp] = (fpCount[fp] || 0) + 1; });
-
-  // Monta dados: primeira ocorrência completa, repetições como referência
-  const fpSeen = {};
-  let refIdx = 0;
-  const refNames = ['Refrão', 'Refrão B', 'Refrão C', 'Refrão D'];
-  const printData = [];
-
-  for (let i = 0; i < sections.length; i++) {
-    const fp = fps[i];
-    if (fpCount[fp] > 1) {
-      if (!fpSeen[fp]) {
-        const label = refNames[refIdx] || ('Refrão ' + (refIdx + 1));
-        refIdx++;
-        fpSeen[fp] = label;
-        printData.push({ type: 'full', tag: label, lines: sections[i].lines, repeatCount: fpCount[fp] });
-      } else {
-        printData.push({ type: 'ref', label: fpSeen[fp] });
+  // Procura por blocos repetidos, começando pelos maiores (L = metade da música) até L = 2 linhas
+  for (let L = Math.floor(N / 2); L >= 2; L--) {
+    const seqMap = new Map();
+    
+    // Mapeia onde cada sequência de tamanho L aparece
+    for (let i = 0; i <= N - L; i++) {
+      let canUse = true;
+      for (let k = 0; k < L; k++) {
+        if (covered[i + k]) { canUse = false; break; }
       }
-    } else {
-      printData.push({ type: 'full', tag: sections[i].tag, lines: sections[i].lines });
+      if (!canUse) continue;
+
+      const seqStr = norm.slice(i, i + L).join('|||');
+      if (!seqMap.has(seqStr)) seqMap.set(seqStr, []);
+      seqMap.get(seqStr).push(i);
+    }
+
+    // Processa as sequências que se repetem
+    for (const [seqStr, indices] of seqMap.entries()) {
+      const validOccurrences = [];
+      let lastEnd = -1;
+      for (const idx of indices) {
+        if (idx > lastEnd) {
+          let canUse = true;
+          for (let k = 0; k < L; k++) {
+            if (covered[idx + k]) { canUse = false; break; }
+          }
+          if (canUse) {
+            validOccurrences.push(idx);
+            lastEnd = idx + L - 1;
+          }
+        }
+      }
+
+      // Se repete pelo menos 2 vezes, marcamos como um bloco (ex: Refrão)
+      if (validOccurrences.length >= 2) {
+        const pName = patternNames[pId] || ('Trecho ' + (pId + 1));
+        pId++;
+        validOccurrences.forEach((startIdx, occNum) => {
+          const isFirst = (occNum === 0);
+          for (let k = 0; k < L; k++) {
+            covered[startIdx + k] = true;
+            if (k === 0) {
+              blockAssignments[startIdx] = {
+                type: 'start_pattern',
+                name: pName,
+                isFirst,
+                length: L,
+                repeatCount: validOccurrences.length
+              };
+            } else {
+              blockAssignments[startIdx + k] = { type: 'inside_pattern' };
+            }
+          }
+        });
+      }
     }
   }
+
+  // Constrói os dados finais de impressão
+  const printData = [];
+  let currentGroup = [];
+
+  const flushGroup = () => {
+    if (currentGroup.length > 0) {
+      printData.push({ type: 'lines', lines: currentGroup });
+      currentGroup = [];
+    }
+  };
+
+  for (let i = 0; i < N; i++) {
+    const assign = blockAssignments[i];
+    if (assign && assign.type === 'start_pattern') {
+      flushGroup();
+      if (assign.isFirst) {
+        // Primeira vez: exibe tudo e mostra a tag
+        const patternLines = lines.slice(i, i + assign.length);
+        printData.push({ type: 'pattern_def', name: assign.name, repeatCount: assign.repeatCount, lines: patternLines });
+      } else {
+        // Repetições subsequentes: exibe só a referência
+        printData.push({ type: 'pattern_ref', name: assign.name });
+      }
+    } else if (assign && assign.type === 'inside_pattern') {
+      // Ignora, já foi processado pelo 'start_pattern'
+    } else {
+      currentGroup.push(lines[i]);
+    }
+  }
+  flushGroup();
 
   // Helpers de colorização (mesmas cores do karaokê)
-  const cw = (words) => words.map(([tx, u]) =>
-    `<span class="print-u" style="color:${COLORS[u] || 'inherit'}">${esc(tx)}</span>`
-  ).join(' ');
-  const cg = (groups) => groups.map(([tx, u]) =>
-    `<span class="print-u" style="color:${COLORS[u] || 'inherit'}">${esc(tx)}</span>`
-  ).join(' ');
+  const cw = (words) => words.map(([tx, u]) => `<span class="print-u" style="color:${COLORS[u] || 'inherit'}">${esc(tx)}</span>`).join(' ');
+  const cg = (groups) => groups.map(([tx, u]) => `<span class="print-u" style="color:${COLORS[u] || 'inherit'}">${esc(tx)}</span>`).join(' ');
 
   let html = `
     <div class="print-toolbar">
@@ -2025,20 +2078,29 @@ function openPrintView() {
   `;
 
   for (const pd of printData) {
-    if (pd.type === 'ref') {
-      html += `<div class="print-ref">🔁 ${esc(pd.label)} — repete</div>`;
-    } else {
-      const badge = pd.repeatCount
-        ? `<span class="print-repeat-badge">${pd.repeatCount}×</span>`
-        : '';
-      html += `<div class="print-tag">${esc(pd.tag)}${badge}</div>`;
+    if (pd.type === 'lines') {
+      html += `<div style="margin-top:24px;">`;
       for (const line of pd.lines) {
-        html += `<div class="print-line">`;
-        html += `<div class="print-en">${cw(line.words)}</div>`;
-        if (line.pt && line.pt.length) html += `<div class="print-pt">${cg(line.pt)}</div>`;
-        if (line.ph && line.ph.length) html += `<div class="print-ph">${cg(line.ph)}</div>`;
-        html += `</div>`;
+        html += `<div class="print-line">
+          <div class="print-en">${cw(line.words)}</div>
+          ${line.pt && line.pt.length ? `<div class="print-pt">${cg(line.pt)}</div>` : ''}
+          ${line.ph && line.ph.length ? `<div class="print-ph">${cg(line.ph)}</div>` : ''}
+        </div>`;
       }
+      html += `</div>`;
+    } else if (pd.type === 'pattern_def') {
+      html += `<div class="print-tag">${esc(pd.name)} <span class="print-repeat-badge">${pd.repeatCount}×</span></div>`;
+      html += `<div>`;
+      for (const line of pd.lines) {
+        html += `<div class="print-line">
+          <div class="print-en">${cw(line.words)}</div>
+          ${line.pt && line.pt.length ? `<div class="print-pt">${cg(line.pt)}</div>` : ''}
+          ${line.ph && line.ph.length ? `<div class="print-ph">${cg(line.ph)}</div>` : ''}
+        </div>`;
+      }
+      html += `</div>`;
+    } else if (pd.type === 'pattern_ref') {
+      html += `<div class="print-ref">🔁 ${esc(pd.name)} — repete</div>`;
     }
   }
 
